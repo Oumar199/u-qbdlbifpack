@@ -29,6 +29,8 @@ setup(
         "pytorch-lightning",
         "selenium",
         "sentencepiece",
-        "peft"
+        "peft",
+        "rouge-score",
+        "sacrebleu"
     ],
 )
