@@ -8,7 +8,7 @@ setup(
     description="Contain functions and classes to efficiently train a sequence to sequence to translate between two languages.",
     install_requires=[
         "accelerate==0.21.0",
-        # "torch==2.0.0+cu117",
+        "torch==2.0.0+cu117",
         "spacy",
         "nltk",
         "gensim",
