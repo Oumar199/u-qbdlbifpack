@@ -5,7 +5,7 @@ setup(
     version="0.0.1",
     author="Oumar Kane",
     author_email="oumar.kane@univ-thies.sn",
-    description="Contain functions and classes to efficiently train a sequence to sequence to be trained to translate between two languages.",
+    description="Contain functions and classes to efficiently train a sequence to sequence to translate between two languages.",
     install_requires=[
         "accelerate==0.21.0",
         "torch==2.0.0+cu117",
