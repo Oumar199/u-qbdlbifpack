@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: translate-package
+Version: 0.0.1
+Summary: Contain functions and classes to efficiently train a sequence to sequence to translate between two languages.
+Author: Oumar Kane
+Author-email: oumar.kane@univ-thies.sn
