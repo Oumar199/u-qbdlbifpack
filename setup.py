@@ -29,5 +29,6 @@ setup(
         "pytorch-lightning==1.9.4",
         "selenium",
         "sentencepiece",
+        "peft"
     ],
 )
