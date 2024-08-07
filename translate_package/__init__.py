@@ -15,7 +15,7 @@ from transformers import (
     get_linear_schedule_with_warmup,
     T5ForConditionalGeneration, Adafactor, BartForConditionalGeneration
 )
-from wolof_translate.utils.bucket_iterator import SequenceLengthBatchSampler
+from wolof_translate.utils.bucket_iterator import SequenceLengthBatchSampler, BucketSampler
 from wolof_translate.utils.sent_transformers import TransformerSequences
 from wolof_translate.utils.sent_corrections import *
 from peft import LoraConfig, get_peft_model, TaskType

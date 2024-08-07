@@ -6,6 +6,7 @@ from translate_package import (
     plt,
     torch,
     SequenceLengthBatchSampler,
+    BucketSampler,
     partial,
     Union,
     Callable,
@@ -16,6 +17,8 @@ from translate_package import (
     remove_mark_space,
     delete_guillemet_space
 )
+
+# sentence beginning with "Mooy li ko waral ci li ñu xamle waaye itam" is too long and must removed or corrected
 
 # python translate_hyperparameter_tuning.py --model_generation "t5" --model_name "google-t5/t5-small" --tokenizer_name "sp" --use_bucketing --save_artifact
 
@@ -171,6 +174,35 @@ def get_boundaries(dataset, sizes, min_count):
 
     return boundaries, batch_sizes
 
+def collate_fn_trunc(batch, input_max_len, label_max_len, eos_token_id, pad_token_id, keys: list = ['input_ids', 'attention_mask', 'labels']):
+    
+    from torch.nn.utils.rnn import pad_sequence
+
+    df_dict = {key: [] for key in keys}
+
+    for b in batch:
+
+        for key in df_dict:
+
+            df_dict[key].append(b[key])
+
+    padded_sequences = {}
+
+    for key in df_dict:
+
+        max_len = label_max_len if 'decoder' in key or 'label' in key else input_max_len
+
+        padding_value = 0 if 'mask' in key else pad_token_id # must be take care
+
+        # Pad the input sequences to have the same length
+        padded_sequences[key] = pad_sequence(df_dict[key], batch_first=True, padding_value = padding_value)[:,:max_len]
+
+        # eos token if it is not the case
+        if not 'mask' in key:
+
+             padded_sequences[key][:, -1:][(padded_sequences[key][:, -1:] != eos_token_id) & (padded_sequences[key][:, -1:] != pad_token_id)] = eos_token_id
+
+    return padded_sequences
 
 # define padding collate function
 def pad_collate(batch, padding_value):
@@ -204,9 +236,12 @@ def get_loaders(
     p_char,
     max_words,
     count,
+    src_max_len,
+    tgt_max_len,
     num_workers,
     device,
     use_bucketing,
+    use_truncation,
     batch_size,
 ):
 
@@ -224,65 +259,121 @@ def get_loaders(
     # training transformations
     t_transformers = partial(sequences, 
                 functions = [
-                    partial(augment_, src_label = src_label, tgt_label = tgt_label),
                     partial(augment, src_label = src_label, p_word = p_word, p_char = p_char, max_words = max_words),
+                    partial(augment_, src_label = src_label, tgt_label = tgt_label),
                     partial(tokenize, tokenizer = tokenizer, src_label = src_label, tgt_label = tgt_label, model_generation = model_generation)
             ])
     
     if use_bucketing:
-        # get boundaries
-        boundaries, batch_sizes = get_boundaries(dataset['train'](transformers = a_transformers), sizes, count)
-
-        # initialize loaders
-        train_sampler = SequenceLengthBatchSampler(
-            dataset["train"](transformers=a_transformers),
-            boundaries=boundaries,
-            batch_sizes=batch_sizes,
-            input_key="input_ids",
-            label_key="labels",
-        )
-
-        valid_sampler = SequenceLengthBatchSampler(
-            dataset["val"](transformers=a_transformers),
-            boundaries=boundaries,
-            batch_sizes=batch_sizes,
-            input_key="input_ids",
-            label_key="labels",
-        )
-
-        test_sampler = SequenceLengthBatchSampler(
-            dataset["test"](transformers=a_transformers),
-            boundaries=boundaries,
-            batch_sizes=batch_sizes,
-            input_key="input_ids",
-            label_key="labels",
-        )
         
-        # add transformations
-        dataset = {s: dataset[s](transformers = t_transformers) for s in dataset}
+        if use_truncation:
+            
+            # initialize loaders
+            train_sampler = BucketSampler(
+                dataset["train"](transformers=a_transformers),
+                batch_size=batch_size,
+                input_key="input_ids",
+                label_key="labels",
+            )
+
+            valid_sampler = BucketSampler(
+                dataset["val"](transformers=a_transformers),
+                batch_size=batch_size,
+                input_key="input_ids",
+                label_key="labels",
+            )
+
+            test_sampler = BucketSampler(
+                dataset["test"](transformers=a_transformers),
+                batch_size=batch_size,
+                input_key="input_ids",
+                label_key="labels",
+            )
+            
+            # add transformations
+            dataset = {s: dataset[s](transformers = t_transformers) for s in dataset}
+            
+            # define data loaders
+            train_loader = DataLoader(
+                dataset["train"],
+                batch_sampler=train_sampler,
+                collate_fn = partial(collate_fn_trunc, input_max_len = src_max_len, label_max_len = tgt_max_len,
+                                    eos_token_id = tokenizer.eos_token_id, pad_token_id = tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
+            valid_loader = DataLoader(
+                dataset["val"],
+                batch_sampler=valid_sampler,
+                collate_fn=partial(collate_fn_trunc, input_max_len = src_max_len, label_max_len = tgt_max_len,
+                                    eos_token_id = tokenizer.eos_token_id, pad_token_id = tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
+            test_loader = DataLoader(
+                dataset["test"],
+                batch_sampler=test_sampler,
+                collate_fn=partial(collate_fn_trunc, input_max_len = src_max_len, label_max_len = tgt_max_len,
+                                    eos_token_id = tokenizer.eos_token_id, pad_token_id = tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
         
-        # define data loaders
-        train_loader = DataLoader(
-            dataset["train"],
-            batch_sampler=train_sampler,
-            collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
-            num_workers=num_workers,
-            pin_memory=True if device in ["cuda", "gpu"] else False,
-        )
-        valid_loader = DataLoader(
-            dataset["val"],
-            batch_sampler=valid_sampler,
-            collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
-            num_workers=num_workers,
-            pin_memory=True if device in ["cuda", "gpu"] else False,
-        )
-        test_loader = DataLoader(
-            dataset["test"],
-            batch_sampler=test_sampler,
-            collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
-            num_workers=num_workers,
-            pin_memory=True if device in ["cuda", "gpu"] else False,
-        )
+        else:
+            
+            # get boundaries
+            boundaries, batch_sizes = get_boundaries(dataset['train'](transformers = a_transformers), sizes, count)
+
+            # initialize loaders
+            train_sampler = SequenceLengthBatchSampler(
+                dataset["train"](transformers=a_transformers),
+                boundaries=boundaries,
+                batch_sizes=batch_sizes,
+                input_key="input_ids",
+                label_key="labels",
+            )
+
+            valid_sampler = SequenceLengthBatchSampler(
+                dataset["val"](transformers=a_transformers),
+                boundaries=boundaries,
+                batch_sizes=batch_sizes,
+                input_key="input_ids",
+                label_key="labels",
+            )
+
+            test_sampler = SequenceLengthBatchSampler(
+                dataset["test"](transformers=a_transformers),
+                boundaries=boundaries,
+                batch_sizes=batch_sizes,
+                input_key="input_ids",
+                label_key="labels",
+            )
+            
+            # add transformations
+            dataset = {s: dataset[s](transformers = t_transformers) for s in dataset}
+            
+            # define data loaders
+            train_loader = DataLoader(
+                dataset["train"],
+                batch_sampler=train_sampler,
+                collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
+            valid_loader = DataLoader(
+                dataset["val"],
+                batch_sampler=valid_sampler,
+                collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
+            test_loader = DataLoader(
+                dataset["test"],
+                batch_sampler=test_sampler,
+                collate_fn=partial(pad_collate, padding_value=tokenizer.pad_token_id),
+                num_workers=num_workers,
+                pin_memory=True if device in ["cuda", "gpu"] else False,
+            )
 
     else:
         
