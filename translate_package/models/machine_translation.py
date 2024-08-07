@@ -78,6 +78,10 @@ class MachineTranslationTransformer(pl.LightningModule):
                 
                 self.model = get_peft_model(self.original_model, self.lora_config)          
             
+            else:
+                
+                self.model = self.original_model
+            
         else:
 
             self.model = model
