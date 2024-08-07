@@ -112,7 +112,7 @@ class SentenceDataset(Dataset):
         return len(self.source_sentences)
         
 
-def load_data(tokenizer, model_generation, src_label, tgt_label, data_path, test_size, valid_size, seed):
+def load_data(src_label, tgt_label, data_path, test_size, valid_size, seed):
     
     # load the dataset with pandas
     dataset_ = pd.read_csv(data_path)
@@ -246,7 +246,7 @@ def get_loaders(
 ):
 
     # get dataset
-    dataset = load_data(tokenizer, model_generation, src_label, tgt_label, data_path, test_size, valid_size, seed)
+    dataset = load_data(src_label, tgt_label, data_path, test_size, valid_size, seed)
     
     # analysis transformations
     

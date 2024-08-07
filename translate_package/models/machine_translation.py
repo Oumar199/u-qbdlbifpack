@@ -45,17 +45,10 @@ class MachineTranslationTransformer(pl.LightningModule):
         max_new_tokens=200,
         predict_with_generate=True,
         num_beams=1,
+        use_peft=False
     ):
 
         super().__init__()
-
-        self.lora_config = LoraConfig(
-            r=r,  # Rank
-            lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            bias=bias,
-            task_type=TaskType.SEQ_2_SEQ_LM, 
-        )
 
         if model is None:
             if model_generation in ["t5"]:
@@ -73,7 +66,17 @@ class MachineTranslationTransformer(pl.LightningModule):
             # resize the token embeddings
             self.original_model.resize_token_embeddings(len(tokenizer))
             
-            self.model = get_peft_model(self.original_model, self.lora_config)          
+            if use_peft:
+                
+                self.lora_config = LoraConfig(
+                    r=r,  # Rank
+                    lora_alpha=lora_alpha,
+                    lora_dropout=lora_dropout,
+                    bias=bias,
+                    task_type=TaskType.SEQ_2_SEQ_LM, 
+                )
+                
+                self.model = get_peft_model(self.original_model, self.lora_config)          
             
         else:
 
@@ -222,6 +225,8 @@ class MachineTranslationTransformer(pl.LightningModule):
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             max_new_tokens=self.max_new_tokens,
+            do_sample=True,
+            num_beams=self.num_beams
         )
 
         # decode the labels
