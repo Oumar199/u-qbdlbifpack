@@ -1,4 +1,4 @@
-from cypher_code_package import wandb
+from translate_package import wandb
 
 
 def download_checkpoint(project, artifact_path, key):
