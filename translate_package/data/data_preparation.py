@@ -291,7 +291,7 @@ def get_loaders(
             )
             
             # add transformations
-            dataset = {s: dataset[s](transformers = t_transformers) for s in dataset}
+            dataset = {s: dataset[s](transformers = t_transformers) if s == 'train' else dataset[s](transformers = a_transformers) for s in dataset}
             
             # define data loaders
             train_loader = DataLoader(
