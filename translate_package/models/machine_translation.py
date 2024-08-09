@@ -55,13 +55,13 @@ class MachineTranslationTransformer(pl.LightningModule):
             if model_generation in ["t5"]:
                 
                 self.original_model = T5ForConditionalGeneration.from_pretrained(
-                    model_name, torch_dtype=torch.bfloat16
+                    model_name, torch_dtype=torch.float32
                 )
                 
             elif model_generation in ["bart"]:
                 
                 self.original_model = BartForConditionalGeneration.from_pretrained(
-                    model_name, torch_dtype=torch.bfloat16
+                    model_name, torch_dtype=torch.float32
                 )
                 
             # resize the token embeddings
