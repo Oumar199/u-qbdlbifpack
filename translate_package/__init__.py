@@ -13,7 +13,8 @@ from transformers import (
     TrainingArguments,
     Trainer,
     get_linear_schedule_with_warmup,
-    T5ForConditionalGeneration, Adafactor, BartForConditionalGeneration
+    T5ForConditionalGeneration, Adafactor, BartForConditionalGeneration,
+    AdamW
 )
 from wolof_translate.utils.bucket_iterator import SequenceLengthBatchSampler, BucketSampler
 from wolof_translate.utils.sent_transformers import TransformerSequences
