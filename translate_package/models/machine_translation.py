@@ -130,7 +130,7 @@ class MachineTranslationTransformer(pl.LightningModule):
         
         elif self.model_generation in ["bart"]:
             
-            optimizer = torch.optim.AdamW(
+            optimizer = AdamW(
                 self.parameters(), lr=self.lr
             )
 
@@ -146,7 +146,7 @@ class MachineTranslationTransformer(pl.LightningModule):
                 num_training_steps=self.num_training_steps,
             )
             
-            return [optimizer], [{"scheduler": scheduler}]
+            return {'optimizer': optimizer, 'lr_scheduler': {"scheduler": scheduler}}
             
     def training_step(self, batch, batch_idx=None):
 
