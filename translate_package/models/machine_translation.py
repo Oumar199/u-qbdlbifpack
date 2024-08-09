@@ -130,7 +130,7 @@ class MachineTranslationTransformer(pl.LightningModule):
         
         elif self.model_generation in ["bart"]:
             
-            optimizer = AdamW(
+            optimizer = torch.optim.Adam(
                 self.parameters(), lr=self.lr
             )
 
