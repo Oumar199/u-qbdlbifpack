@@ -10,7 +10,7 @@ class LSTMOutput:
 
 class LSTMSequenceToSequence(torch.nn.Module):
 
-  def __init__(self, tokenizer, embedding_size = 128, num_layers = 300, hidden_size = 128, dropout=0.1, bidirectional = True):
+  def __init__(self, tokenizer, embedding_size = 128, num_layers = 6, hidden_size = 128, dropout=0.1, bidirectional = True):
     
     super().__init__()
 

@@ -49,7 +49,7 @@ class MachineTranslationTransformer(pl.LightningModule):
         num_beams=1,
         use_peft=False,
         embedding_size=128,
-        num_layers=300,
+        num_layers=6,
         hidden_size=128,
         dropout=0.1,
         bidirectional=False
