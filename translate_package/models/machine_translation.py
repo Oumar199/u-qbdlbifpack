@@ -13,6 +13,8 @@ from translate_package import (
     AdamW
 )
 
+from translate_package.models.lstm import LSTMSequenceToSequence
+
 
 def print_number_of_trainable_model_parameters(model):
     trainable_model_params = 0
@@ -22,7 +24,6 @@ def print_number_of_trainable_model_parameters(model):
         if param.requires_grad:
             trainable_model_params += param.numel()
     return f"trainable model parameters: {trainable_model_params}\nall model parameters: {all_model_params}\npercentage of trainable model parameters: {100 * trainable_model_params / all_model_params:.2f}%"
-
 
 class MachineTranslationTransformer(pl.LightningModule):
 
@@ -46,7 +47,12 @@ class MachineTranslationTransformer(pl.LightningModule):
         max_new_tokens=200,
         predict_with_generate=True,
         num_beams=1,
-        use_peft=False
+        use_peft=False,
+        embedding_size=128,
+        num_layers=300,
+        hidden_size=128,
+        dropout=0.1,
+        bidirectional=False
     ):
 
         super().__init__()
@@ -63,11 +69,15 @@ class MachineTranslationTransformer(pl.LightningModule):
                 self.original_model = BartForConditionalGeneration.from_pretrained(
                     model_name, torch_dtype=torch.float32
                 )
+            
+            elif model_generation in ["lstm"]:
+                
+                self.original_model = LSTMSequenceToSequence(tokenizer, embedding_size, num_layers, hidden_size, dropout, bidirectional)
                 
             # resize the token embeddings
-            self.original_model.resize_token_embeddings(len(tokenizer))
+            if not model_generation in ["lstm"]: self.original_model.resize_token_embeddings(len(tokenizer))
             
-            if use_peft:
+            if use_peft and not model_generation in ["lstm"]:
                 
                 self.lora_config = LoraConfig(
                     r=r,  # Rank
@@ -115,7 +125,7 @@ class MachineTranslationTransformer(pl.LightningModule):
 
     def forward(self, input):
 
-        output = self.model(**input)
+        output = self.model(**input) if model_generation in ["lstm"] else self.model(input['input_ids'], input['labels'])
 
         return output.loss, output.logits
 
@@ -133,8 +143,14 @@ class MachineTranslationTransformer(pl.LightningModule):
             optimizer = torch.optim.AdamW(
                 self.parameters(), lr=self.lr
             )
+        
+        elif self.model_generation in ["lstm"]:
+            
+            optimizer = torch.optim.AdamW(
+                self.parameters(), lr=self.lr
+            )
 
-        if self.model_generation in ["t5"]:
+        if self.model_generation in ["t5", "lstm"]:
             
             return [optimizer]
 
@@ -177,7 +193,10 @@ class MachineTranslationTransformer(pl.LightningModule):
                 input_ids=batch["input_ids"],
                 attention_mask=batch["attention_mask"],
                 max_new_tokens=self.max_new_tokens,
-            )
+            ) if not self.model_generation in ["lstm"] else self.model.generate(
+                input_ids=batch["input_ids"],
+                max_new_tokens=self.max_new_tokens,
+            ) 
 
             # decode the labels
             predictions = self.tokenizer.batch_decode(
@@ -232,6 +251,10 @@ class MachineTranslationTransformer(pl.LightningModule):
             max_new_tokens=self.max_new_tokens,
             do_sample=True,
             num_beams=self.num_beams
+        ) if not self.model_generation in ["lstm"] else self.model.generate(
+            input_ids=batch["input_ids"],
+            max_new_tokens=self.max_new_tokens,
+            use_sampling=True
         )
 
         # decode the labels
