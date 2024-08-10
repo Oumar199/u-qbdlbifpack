@@ -125,7 +125,7 @@ class MachineTranslationTransformer(pl.LightningModule):
 
     def forward(self, input):
 
-        output = self.model(**input) if model_generation in ["lstm"] else self.model(input['input_ids'], input['labels'])
+        output = self.model(**input) if not self.model_generation in ["lstm"] else self.model(input['input_ids'], input['labels'])
 
         return output.loss, output.logits
 
