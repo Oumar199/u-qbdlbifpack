@@ -58,9 +58,7 @@ class LSTMSequenceToSequence(torch.nn.Module):
     _, hidden = self.encoder(input_embed)
 
     # initialize predictions
-    predictions = torch.tensor(self.tokenizer.bos_token_id, dtype=torch.long, device=input.device).unsqueeze(0)
-
-    predictions = self.embedding(predictions)
+    predictions = torch.tensor([[self.tokenizer.bos_token_id]]*input_embed.shape[0], dtype=torch.long, device=input.device)
     
     # generate predictions
     for i in range(max_new_tokens):
