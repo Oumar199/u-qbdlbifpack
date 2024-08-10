@@ -47,7 +47,7 @@ class LSTMSequenceToSequence(torch.nn.Module):
 
     decoder_output = self.decoder_output_layer(decoder_output)
     
-    loss = self.loss_fn(decoder_output.view(-1, decoder_output.shape[-1]), output[:, 1:].view(-1))
+    loss = self.loss_fn(decoder_output.reshape(-1, decoder_output.shape[-1]), output[:, 1:].reshape(-1))
 
     return LSTMOutput(decoder_output, loss)
 
