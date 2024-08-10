@@ -11,7 +11,7 @@ class LSTMOutput:
 class LSTMSequenceToSequence(torch.nn.Module):
 
   def __init__(self, tokenizer, embedding_size = 128, num_layers = 300, hidden_size = 128, dropout=0.1, bidirectional = True):
-
+    
     super().__init__()
 
     self.tokenizer = tokenizer
@@ -36,9 +36,6 @@ class LSTMSequenceToSequence(torch.nn.Module):
     
     input_embed = self.embedding(input)
 
-    print(type(input_embed))
-    print(input_embed.shape)
-    
     state, hidden = self.encoder(input_embed)
 
     # decal output for decoder
