@@ -194,7 +194,7 @@ class MachineTranslationTransformer(pl.LightningModule):
                 attention_mask=batch["attention_mask"],
                 max_new_tokens=self.max_new_tokens,
             ) if not self.model_generation in ["lstm"] else self.model.generate(
-                input_ids=batch["input_ids"],
+                input=batch["input_ids"],
                 max_new_tokens=self.max_new_tokens,
             ) 
 
@@ -252,7 +252,7 @@ class MachineTranslationTransformer(pl.LightningModule):
             do_sample=True,
             num_beams=self.num_beams
         ) if not self.model_generation in ["lstm"] else self.model.generate(
-            input_ids=batch["input_ids"],
+            input=batch["input_ids"],
             max_new_tokens=self.max_new_tokens,
             use_sampling=True
         )
