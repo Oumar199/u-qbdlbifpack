@@ -8,7 +8,7 @@ class LSTMOutput:
         
         self.loss = loss
 
-class LSTMSequenceToSequence(torch.Module):
+class LSTMSequenceToSequence(torch.nn.Module):
 
   def __init__(self, tokenizer, embedding_size = 128, num_layers = 300, hidden_size = 128, dropout=0.1, bidirectional = True):
 
@@ -32,12 +32,6 @@ class LSTMSequenceToSequence(torch.Module):
 
     self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
 
-    self.predictions = {
-        'source references': [],
-        'predictions': [],
-        'target references': []
-    }
-
   def forward(self, input, output):
 
     input_embed = self.embedding(input)
@@ -53,8 +47,6 @@ class LSTMSequenceToSequence(torch.Module):
 
     decoder_output = self.decoder_output_layer(output)
     
-    output[output == self.tokenizer.pad_token_id] = -100
-    
     loss = self.loss_fn(output.view(-1, output.shape[-1]), output[:, 1:].view(-1))
 
     return LSTMOutput(decoder_output, loss)
@@ -66,7 +58,7 @@ class LSTMSequenceToSequence(torch.Module):
     _, hidden = self.encoder(input_embed)
 
     # initialize predictions
-    predictions = torch.tensor(self.tokenizer._bos_token).unsqueeze(0).type_as(input).to(input.device)
+    predictions = torch.tensor(self.tokenizer._bos_token, dtype=input.dtype, device=input.device).unsqueeze(0)
 
     # generate predictions
     for i in range(max_new_tokens):
