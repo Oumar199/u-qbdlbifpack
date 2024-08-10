@@ -33,7 +33,11 @@ class LSTMSequenceToSequence(torch.nn.Module):
     self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)
 
   def forward(self, input, output):
-
+    print(type(input))
+    print(type(output))
+    print(input.shape)
+    print(output.shape)
+    
     input_embed = self.embedding(input)
 
     state, hidden = self.encoder(input_embed)
