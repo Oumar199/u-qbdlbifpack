@@ -60,6 +60,9 @@ class LSTMSequenceToSequence(torch.nn.Module):
     # initialize predictions
     predictions = torch.tensor([[self.tokenizer.bos_token_id]]*input_embed.shape[0], dtype=torch.long, device=input.device)
     
+    # variable identifying if the sequence is finished
+    finished_sequences = torch.zeros(input_embed.shape[0], dtype=torch.bool)
+    
     # generate predictions
     for i in range(max_new_tokens):
 
@@ -80,6 +83,15 @@ class LSTMSequenceToSequence(torch.nn.Module):
       # add new prediction
       predictions = torch.cat((predictions, prediction), dim = -1)
 
+      # recuperate next ids
+      next_token_ids = prediction.squeeze(-1)
+      
+      finished_sequences |= (next_token_ids == self.tokenizer.eos_token_id)
+
+      if finished_sequences.all():
+        
+        break
+      
     # return predictions
     return predictions[:, 1:]
 
