@@ -8,7 +8,7 @@ def load_tokenizer(tokenizer_name, model, dir_path, file_name):
         
         tokenizer_path = os.path.join(dir_path, f"{file_name}.json")
         
-        if model == "bart":
+        if model in ["bart", "lstm"]:
         
             tokenizer = BartTokenizerFast(tokenizer_file=tokenizer_path)
         
@@ -21,7 +21,7 @@ def load_tokenizer(tokenizer_name, model, dir_path, file_name):
         if model == 't5':
             
             tokenizer = T5TokenizerFast(vocab_file=tokenizer_path)
-        
+    
         print(f"The Sentence Piece tokenizer was successfully uploaded from {tokenizer_path}")
     
     return tokenizer
