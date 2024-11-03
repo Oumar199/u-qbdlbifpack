@@ -141,13 +141,13 @@ class MachineTranslationTransformer(pl.LightningModule):
         elif self.model_generation in ["bart"]:
             
             optimizer = torch.optim.AdamW(
-                self.parameters(), lr=self.lr
+                self.parameters(), lr=self.lr, weight_decay=self.weight_decay
             )
         
         elif self.model_generation in ["lstm"]:
             
             optimizer = torch.optim.AdamW(
-                self.parameters(), lr=self.lr
+                self.parameters(), lr=self.lr, weight_decay=self.weight_decay
             )
 
         if self.model_generation in ["t5", "lstm"]:
