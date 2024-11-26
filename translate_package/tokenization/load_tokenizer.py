@@ -18,7 +18,7 @@ def load_tokenizer(tokenizer_name, model, dir_path, file_name):
         
         tokenizer_path = os.path.join(dir_path, f"{file_name}.model")
         
-        if model == 't5':
+        if model in ['t5', 'mt5']:
             
             tokenizer = T5TokenizerFast(vocab_file=tokenizer_path)
     
