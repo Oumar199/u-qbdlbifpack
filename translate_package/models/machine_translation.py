@@ -8,6 +8,7 @@ from translate_package import (
     wandb,
     get_peft_model,
     T5ForConditionalGeneration,
+    MT5ForConditionalGeneration,
     BartForConditionalGeneration,
     Adafactor,
     AdamW
@@ -61,6 +62,12 @@ class MachineTranslationTransformer(pl.LightningModule):
             if model_generation in ["t5"]:
                 
                 self.original_model = T5ForConditionalGeneration.from_pretrained(
+                    model_name, torch_dtype=torch.float32
+                )
+                
+            elif model_generation in ["mt5"]:
+                
+                self.original_model = MT5ForConditionalGeneration.from_pretrained(
                     model_name, torch_dtype=torch.float32
                 )
                 
@@ -131,14 +138,14 @@ class MachineTranslationTransformer(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        if self.model_generation in ["t5"]:
+        if self.model_generation in ["t5", "mt5"]:
             
             optimizer = Adafactor(
                 self.parameters(), lr=self.lr, weight_decay=self.weight_decay, relative_step = False,
                 warmup_init = False
             )
         
-        elif self.model_generation in ["bart"]:
+        elif self.model_generation in ["bart", "mbart"]:
             
             optimizer = torch.optim.AdamW(
                 self.parameters(), lr=self.lr, weight_decay=self.weight_decay
@@ -150,7 +157,7 @@ class MachineTranslationTransformer(pl.LightningModule):
                 self.parameters(), lr=self.lr, weight_decay=self.weight_decay
             )
 
-        if self.model_generation in ["t5", "lstm"]:
+        if self.model_generation in ["t5", "lstm", "mt5"]:
             
             return [optimizer]
 
