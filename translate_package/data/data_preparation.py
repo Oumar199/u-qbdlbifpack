@@ -38,7 +38,7 @@ def augment_(examples, src_label, tgt_label):
 
 def tokenize(examples, tokenizer, src_label, tgt_label, model_generation):
     
-    if model_generation in ["t5"]:
+    if model_generation in ["t5", "mt5"]:
         
         eos_token = ""
         bos_token = ""
