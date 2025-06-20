@@ -11,7 +11,7 @@ from translate_package import (
     MT5ForConditionalGeneration,
     BartForConditionalGeneration,
     Adafactor,
-    AdamW
+    AdamWeightDecay
 )
 
 from translate_package.models.lstm import LSTMSequenceToSequence

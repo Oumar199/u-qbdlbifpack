@@ -5,7 +5,7 @@ from translate_package.errors import TokenizerException
 def train_tokenizer(arguments):
     
     # recuperate dataset
-    dataset = pd.read_csv(arguments.dataset_file)
+    dataset = pd.read_csv(arguments.dataset_file).astype(str)
     
     if arguments.name == 'bpe':
         

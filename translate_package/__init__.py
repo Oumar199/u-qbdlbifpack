@@ -14,8 +14,7 @@ from transformers import (
     Trainer,
     get_linear_schedule_with_warmup,
     T5ForConditionalGeneration, Adafactor, BartForConditionalGeneration,
-    MT5ForConditionalGeneration,
-    AdamW
+    MT5ForConditionalGeneration, AdamWeightDecay
 )
 from wolof_translate.utils.bucket_iterator import SequenceLengthBatchSampler, BucketSampler
 from wolof_translate.utils.sent_transformers import TransformerSequences
