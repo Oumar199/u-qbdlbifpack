@@ -25,7 +25,7 @@ def load_tokenizer(tokenizer_name, model, dir_path, file_name, model_name = None
         
             tokenizer = BartTokenizerFast(tokenizer_file=tokenizer_path)
         
-        print(f"The Byte Pair Encoding tokenizer was successfully uploaded from {tokenizer_path}")
+            print(f"The Byte Pair Encoding tokenizer was successfully uploaded from {tokenizer_path}")
         
     elif tokenizer_name == "sp":
         
@@ -35,6 +35,6 @@ def load_tokenizer(tokenizer_name, model, dir_path, file_name, model_name = None
             
             tokenizer = T5TokenizerFast(vocab_file=tokenizer_path)
     
-        print(f"The Sentence Piece tokenizer was successfully uploaded from {tokenizer_path}")
+            print(f"The Sentence Piece tokenizer was successfully uploaded from {tokenizer_path}")
     
     return tokenizer
