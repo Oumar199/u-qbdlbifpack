@@ -10,6 +10,7 @@ from translate_package import (
     T5ForConditionalGeneration,
     MT5ForConditionalGeneration,
     BartForConditionalGeneration,
+    AutoModelForSeq2SeqLM,
     Adafactor,
     AdamWeightDecay
 )
@@ -68,6 +69,12 @@ class MachineTranslationTransformer(pl.LightningModule):
             elif model_generation in ["mt5"]:
                 
                 self.original_model = MT5ForConditionalGeneration.from_pretrained(
+                    model_name, torch_dtype=torch.float32
+                )
+                
+            elif model_generation in ["nllb"]:
+                
+                self.original_model = AutoModelForSeq2SeqLM.from_pretrained(
                     model_name, torch_dtype=torch.float32
                 )
                 

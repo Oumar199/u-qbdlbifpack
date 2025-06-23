@@ -11,7 +11,7 @@ from tokenizers import (
 from transformers import (
     GenerationConfig,
     TrainingArguments,
-    Trainer,
+    Trainer, AutoModelForSeq2SeqLM,
     get_linear_schedule_with_warmup,
     T5ForConditionalGeneration, Adafactor, BartForConditionalGeneration,
     MT5ForConditionalGeneration, AdamWeightDecay

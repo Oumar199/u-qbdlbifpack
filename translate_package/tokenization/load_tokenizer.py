@@ -1,8 +1,21 @@
 from transformers import BartTokenizerFast
 from transformers import T5TokenizerFast
+from transformers import AutoTokenizer
 import os
 
-def load_tokenizer(tokenizer_name, model, dir_path, file_name):
+def load_tokenizer(tokenizer_name, model, dir_path, file_name, model_name = None):
+    
+    if model == "nllb":
+        
+        if not model_name is None:
+        
+            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            
+            print(f"The {model}'s tokenizer was successfully loaded")
+        
+        else:
+            
+            raise ValueError("For the nllb model you must specify the path to the model!")
     
     if tokenizer_name == "bpe":
         
