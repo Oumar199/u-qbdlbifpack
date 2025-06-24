@@ -45,8 +45,8 @@ def tokenize(examples, tokenizer, src_label, tgt_label, model_generation):
     
     else:
         
-        eos_token = tokenizer._eos_token 
-        bos_token = tokenizer._bos_token
+        eos_token = tokenizer.eos_token 
+        bos_token = tokenizer.bos_token
     
     examples[src_label] = bos_token + examples[src_label] + eos_token
 
