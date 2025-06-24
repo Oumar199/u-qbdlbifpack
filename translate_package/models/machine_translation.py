@@ -89,7 +89,7 @@ class MachineTranslationTransformer(pl.LightningModule):
                 self.original_model = LSTMSequenceToSequence(tokenizer, embedding_size, num_layers, hidden_size, dropout, bidirectional)
                 
             # resize the token embeddings
-            if not model_generation in ["lstm"]: self.original_model.resize_token_embeddings(len(tokenizer))
+            if not model_generation in ["lstm", "nllb"]: self.original_model.resize_token_embeddings(len(tokenizer))
             
             if use_peft and not model_generation in ["lstm"]:
                 
