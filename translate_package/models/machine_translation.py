@@ -15,6 +15,8 @@ from translate_package import (
     AdamWeightDecay
 )
 
+from translate_package.models.gradient_observation import get_gradients_mean
+
 from translate_package.models.lstm import LSTMSequenceToSequence
 
 
@@ -189,8 +191,10 @@ class MachineTranslationTransformer(pl.LightningModule):
             on_epoch=True,
             sync_dist=True,
         )
+        
+        mean_grad = get_gradients_mean(self.original_model)
 
-        wandb.log({"train_loss": loss, "trainer/global_step": self.global_step})
+        wandb.log({"train_loss": loss, "trainer/global_step": self.global_step, "mean_gradient": mean_grad})
 
         return loss
 
