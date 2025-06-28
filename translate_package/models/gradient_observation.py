@@ -6,4 +6,4 @@ def get_gradients_mean(model: Module):
         if param.grad is not None:
             ave_grads.append(param.grad.abs().mean().item())
     
-    return sum(ave_grads)/len(ave_grads)
+    return sum(ave_grads)/(len(ave_grads) + 1e-5)
